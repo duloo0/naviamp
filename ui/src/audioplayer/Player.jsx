@@ -24,6 +24,7 @@ import {
   syncQueue,
 } from '../actions'
 import PlayerToolbar from './PlayerToolbar'
+import NowPlayingFullScreen from './NowPlayingFullScreen'
 import { sendNotification } from '../utils'
 import subsonic from '../subsonic'
 import locale from './locale'
@@ -62,6 +63,7 @@ const Player = () => {
   const gainInfo = useSelector((state) => state.replayGain)
   const [context, setContext] = useState(null)
   const [gainNode, setGainNode] = useState(null)
+  const [fullScreenOpen, setFullScreenOpen] = useState(false)
 
   useEffect(() => {
     if (
@@ -266,8 +268,8 @@ const Player = () => {
   )
 
   const onCoverClick = useCallback((mode, audioLists, audioInfo) => {
-    if (mode === 'full' && audioInfo?.song?.albumId) {
-      window.location.href = `#/album/${audioInfo.song.albumId}/show`
+    if (mode === 'full' && audioInfo?.song) {
+      setFullScreenOpen(true)
     }
   }, [])
 
@@ -283,7 +285,14 @@ const Player = () => {
   }
 
   const handlers = useMemo(
-    () => keyHandlers(audioInstance, playerState),
+    () => ({
+      ...keyHandlers(audioInstance, playerState),
+      TOGGLE_FULLSCREEN: () => {
+        if (playerState.current?.song) {
+          setFullScreenOpen((prev) => !prev)
+        }
+      },
+    }),
     [audioInstance, playerState],
   )
 
@@ -309,6 +318,11 @@ const Player = () => {
         onCoverClick={onCoverClick}
         onBeforeDestroy={onBeforeDestroy}
         getAudioInstance={setAudioInstance}
+      />
+      <NowPlayingFullScreen
+        open={fullScreenOpen}
+        onClose={() => setFullScreenOpen(false)}
+        audioInstance={audioInstance}
       />
       <GlobalHotKeys handlers={handlers} keyMap={keyMap} allowChanges />
     </ThemeProvider>
