@@ -33,3 +33,5 @@ AGENTS.md
 *.test
 *.wasm
 openspec/
+.claude/settings.local.json
+NDH6SA~M
